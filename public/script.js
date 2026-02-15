@@ -375,3 +375,37 @@ function getMinutesFromDuration(dur) {
     const [h, m] = dur.split(':').map(Number);
     return (h * 60) + m;
 }
+
+// SOPORTE TI
+async function notificarSoporte() {
+    const WEBHOOK_URL = 'https://n8n-n8n.amv1ou.easypanel.host/webhook/soporte-oxxo'; 
+    // Cambiamos el icono para dar feedback de "enviando"
+    const btn = document.querySelector('#soporte-ti button');
+    const originalIcon = btn.innerText;
+    btn.innerText = '⌛';
+    btn.disabled = true;
+
+    try {
+        const response = await fetch(WEBHOOK_URL, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({
+                evento: 'Solicitud de Soporte TI',
+                sitio: 'Oxxo Agenda',
+                timestamp: new Date().toISOString(),
+                url: window.location.href
+            })
+        });
+
+        if (response.ok) {
+            alert('✅ Solicitud enviada al equipo de Soporte TI vía WhatsApp.');
+        } else {
+            throw new Error();
+        }
+    } catch (error) {
+        alert('❌ No se pudo contactar a soporte. Intente más tarde.');
+    } finally {
+        btn.innerText = originalIcon;
+        btn.disabled = false;
+    }
+}
