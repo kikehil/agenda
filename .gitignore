@@ -1,0 +1,8 @@
+node_modules/
+dist/
+.env
+*.log
+.gemini/
+server_log.txt
+server_log_utf8.txt
+test_results.txt

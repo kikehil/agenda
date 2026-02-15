@@ -1,0 +1,166 @@
+<!DOCTYPE html>
+<html lang="es">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>OxxoTime - Premium Agenda Control</title>
+    <link rel="stylesheet" href="style.css">
+    <link rel="preconnect" href="https://fonts.googleapis.com">
+    <link href="https://fonts.googleapis.com/css2?family=Outfit:wght@400;700;900&display=swap" rel="stylesheet">
+</head>
+
+<body class="is-paused">
+
+    <!-- Pantalla de Espera (Pre-sesión) -->
+    <div id="waiting-screen" class="waiting-overlay">
+        <div class="waiting-content">
+            <img src="logoti.png" alt="OXXO" class="waiting-logo">
+            <h1 class="waiting-welcome">¡BIENVENIDOS!</h1>
+            <p class="waiting-text">La sesión está programada para iniciar pronto.</p>
+            <div class="waiting-countdown">
+                <span style="font-weight: 950; letter-spacing: 2px;">INICIAMOS EN:</span>
+                <div id="pre-countdown" class="countdown-timer">00:00:00</div>
+            </div>
+            <p id="pre-start-time" class="start-at-info">Hora de inicio: --:--</p>
+            <button onclick="document.getElementById('btn-toggle-admin').click()" class="btn-admin-link">Acceso
+                Moderador</button>
+        </div>
+    </div>
+
+    <!-- Sidebar Agenda Lateral -->
+    <nav id="agenda-sidebar" class="sidebar">
+        <div class="sidebar-header">
+            <span class="sidebar-title">AGENDA DE HOY</span>
+            <button id="btn-toggle-sidebar" class="btn-toggle">📅</button>
+        </div>
+        <div id="sidebar-list" class="sidebar-content">
+            <!-- Items de la agenda dinámicos -->
+        </div>
+    </nav>
+
+    <!-- Header OXXO -->
+    <header class="navbar">
+        <div class="container">
+            <img src="logotm.png" alt="OXXO" class="brand-logo">
+            <div class="flex-row">
+                <span id="label-modo" class="badge">ESPECTADOR</span>
+                <button id="btn-toggle-admin" class="btn-outline">Panel de Control</button>
+            </div>
+        </div>
+    </header>
+
+    <!-- UI ESPECTADOR / ORADOR -->
+    <main class="main-display">
+        <div id="speaker-alert" class="hidden"
+            style="background: white; color: red; padding: 10px 40px; border-radius: 50px; font-weight: 900; margin-bottom: 20px; box-shadow: 0 10px 30px rgba(0,0,0,0.2);">
+            TU TURNO</div>
+        <div id="break-alert" class="hidden"
+            style="background: black; color: white; padding: 10px 40px; border-radius: 50px; font-weight: 900; margin-bottom: 20px;">
+            EN RECESO</div>
+
+        <h1 id="current-title">Cargando Agenda...</h1>
+        <div id="timer" class="timer-display">00:00</div>
+        <h2 id="current-speaker">---</h2>
+
+        <!-- Próximo Tema -->
+        <div class="next-topic-card" id="next-topic-area">
+            <span class="next-label">A CONTINUACIÓN</span>
+            <div style="text-align: center;">
+                <span id="next-topic-name">---</span><br>
+                <span id="next-speaker-name">---</span>
+            </div>
+        </div>
+    </main>
+
+    <!-- PANEL DE ADMINISTRACIÓN -->
+    <div id="admin-panel" class="modal hidden">
+        <div class="modal-content">
+            <div class="flex-row" style="justify-content: space-between; margin-bottom: 30px;">
+                <h2 style="font-weight: 950; font-size: 2rem;">Moderación TOPS</h2>
+                <button id="btn-close-admin" class="btn-outline">Cerrar</button>
+            </div>
+
+            <div class="admin-body">
+                <div class="excel-controls">
+                    <div>
+                        <p style="font-weight: 900; margin-bottom: 5px;">IMPORTAR DESDE EXCEL</p>
+                        <p style="font-size: 0.8rem; color: #666;">Carga tu agenda completa en segundos</p>
+                    </div>
+                    <div class="flex-row">
+                        <button id="btn-download-template" class="btn-outline">Descargar Plantilla</button>
+                        <label for="excel-upload" class="btn-primary" style="cursor: pointer; margin-bottom: 0;">Subir
+                            Agenda</label>
+                        <input type="file" id="excel-upload" accept=".xlsx, .xls" style="display: none;">
+                    </div>
+                </div>
+
+                <div class="playback-controls">
+                    <button id="admin-prev" class="btn-control">Anterior</button>
+                    <button id="admin-play" class="btn-control btn-play">Iniciar Tema</button>
+                    <button id="admin-pause" class="btn-control btn-pause">Pausar</button>
+                    <button id="admin-next" class="btn-control">Siguiente</button>
+                    <button id="admin-reset" class="btn-outline" style="margin-left: 20px;">Reiniciar Todo</button>
+                </div>
+
+                <h3 style="margin: 30px 0 15px; font-weight: 900;">Edición Rápida</h3>
+                <div class="table-wrapper">
+                    <table class="tops-table">
+                        <thead>
+                            <tr>
+                                <th style="width: 100px;">INICIO</th>
+                                <th style="width: 100px;">FIN</th>
+                                <th style="width: 100px;">DURACIÓN</th>
+                                <th>TEMA / ACTIVIDAD</th>
+                                <th>PRESENTA</th>
+                                <th style="width: 150px;">TIPO</th>
+                                <th style="width: 60px;">-</th>
+                            </tr>
+                        </thead>
+                        <tbody id="agenda-rows"></tbody>
+                    </table>
+                </div>
+
+                <div class="flex-row" style="justify-content: space-between; margin-top: 20px;">
+                    <button id="btn-add-row" class="btn-outline">+ Agregar Fila</button>
+                    <button id="btn-save-agenda" class="btn-primary">GUARDAR CAMBIOS EN SERVIDOR</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Login Admin -->
+    <div id="admin-login-modal" class="modal hidden">
+        <div class="modal-mini">
+            <img src="logotm.png" alt="OXXO" style="width: 150px; margin-bottom: 20px;">
+            <h3 style="font-weight: 900;">Acceso Moderador</h3>
+            <input type="password" id="admin-password" placeholder="Contraseña maestra" class="input-full"
+                style="padding: 15px; border-radius: 12px; border: 2px solid #eee; width: 100%; margin: 20px 0; text-align: center;">
+            <button id="btn-submit-admin-login" class="btn-primary" style="width: 100%;">AUTENTICAR</button>
+            <p id="admin-login-error" style="color: var(--rojo-oxxo); margin-top: 15px; font-weight: 700;"
+                class="hidden"></p>
+        </div>
+    </div>
+
+    <!-- Login Orador -->
+    <div id="login-modal" class="modal">
+        <div class="modal-mini">
+            <img src="logotm.png" alt="OXXO" style="width: 150px; margin-bottom: 20px;">
+            <h3 style="font-weight: 900;">¿Quién nos acompaña?</h3>
+            <input type="text" id="user-name" placeholder="Tu nombre y apellido" class="input-full"
+                style="padding: 15px; border-radius: 12px; border: 2px solid #eee; width: 100%; margin: 20px 0; text-align: center;">
+            <button id="btn-login" class="btn-primary" style="width: 100%;">ENTRAR A LA SESIÓN</button>
+        </div>
+    </div>
+
+    <!-- Toast Container -->
+    <div id="toast-container" class="toast-container"></div>
+
+    <audio id="sound-finish" src="https://assets.mixkit.co/active_storage/sfx/2869/2869-preview.mp3"></audio>
+
+    <script src="https://cdn.sheetjs.com/xlsx-0.20.1/package/dist/xlsx.full.min.js"></script>
+    <script src="/socket.io/socket.io.js"></script>
+    <script src="script.js"></script>
+</body>
+
+</html>
