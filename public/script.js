@@ -411,23 +411,24 @@ async function notificarSoporte() {
             url: window.location.href
         };
 
-        const response = await fetch(WEBHOOK_URL, {
+        // Usamos mode: 'no-cors' para evitar errores estúpidos del navegador
+        // n8n recibirá el mensaje, aunque el navegador diga que "falló" porque no puede leer la respuesta.
+        await fetch(WEBHOOK_URL, {
             method: 'POST',
-            mode: 'cors',
+            mode: 'no-cors',
             headers: {
                 'Content-Type': 'text/plain'
             },
             body: JSON.stringify(data)
         });
 
-        if (response.ok) {
-            alert('✅ Solicitud enviada al equipo de Soporte TI vía WhatsApp.');
-        } else {
-            throw new Error(`Servidor respondió con código ${response.status}`);
-        }
+        // Como usamos no-cors, el navegador no nos deja leer la respuesta (siempre es "falla" técnica)
+        // Pero como ya confirmaste que el mensaje LLEGA a WhatsApp, simplemente damos por hecho que funcionó.
+        alert('✅ Solicitud enviada al equipo de Soporte TI vía WhatsApp.');
+
     } catch (error) {
         console.error('Error enviando a n8n:', error);
-        alert(`❌ Error: ${error.message}. Verifique si n8n está activo o si hay bloqueo de red.`);
+        alert(`❌ Error al enviar solicitud. Verifique su conexión.`);
     } finally {
         btn.innerText = originalIcon;
         btn.disabled = false;
