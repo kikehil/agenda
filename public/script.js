@@ -378,7 +378,7 @@ function getMinutesFromDuration(dur) {
 
 // SOPORTE TI
 async function notificarSoporte() {
-    const WEBHOOK_URL = 'https://n8n-n8n.amv1ou.easypanel.host/webhook/soporte-oxxo'; 
+    const WEBHOOK_URL = 'https://n8n-n8n.amv1ou.easypanel.host/webhook/soporte-oxxo';
     // Cambiamos el icono para dar feedback de "enviando"
     const btn = document.querySelector('#soporte-ti button');
     const originalIcon = btn.innerText;
@@ -392,6 +392,7 @@ async function notificarSoporte() {
             body: JSON.stringify({
                 evento: 'Solicitud de Soporte TI',
                 sitio: 'Oxxo Agenda',
+                usuario: currentUserName || 'Usuario no identificado',
                 timestamp: new Date().toISOString(),
                 url: window.location.href
             })
