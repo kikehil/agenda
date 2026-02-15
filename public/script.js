@@ -378,35 +378,52 @@ function getMinutesFromDuration(dur) {
 
 // SOPORTE TI
 async function notificarSoporte() {
+    // URL de tu webhook en n8n (Easypanel)
     const WEBHOOK_URL = 'https://n8n-n8n.amv1ou.easypanel.host/webhook/soporte-oxxo';
-    // Cambiamos el icono para dar feedback de "enviando"
+
     const btn = document.querySelector('#soporte-ti button');
     const originalIcon = btn.innerText;
+
+    // Feedback visual inmediato
     btn.innerText = '⌛';
     btn.disabled = true;
+    btn.style.opacity = '0.7';
 
     try {
+        // Obtenemos el nombre del usuario de forma segura
+        const nombreUsuario = (typeof currentUserName !== 'undefined' && currentUserName)
+            ? currentUserName
+            : 'Usuario de Agenda (Anon)';
+
+        const data = {
+            evento: 'Solicitud de Soporte TI',
+            sitio: 'Oxxo Agenda',
+            usuario: nombreUsuario,
+            timestamp: new Date().toISOString(),
+            url: window.location.href
+        };
+
         const response = await fetch(WEBHOOK_URL, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({
-                evento: 'Solicitud de Soporte TI',
-                sitio: 'Oxxo Agenda',
-                usuario: currentUserName || 'Usuario no identificado',
-                timestamp: new Date().toISOString(),
-                url: window.location.href
-            })
+            headers: {
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(data)
         });
 
         if (response.ok) {
             alert('✅ Solicitud enviada al equipo de Soporte TI vía WhatsApp.');
         } else {
-            throw new Error();
+            // Si el servidor responde pero no con un 200 OK
+            throw new Error('Server Error');
         }
     } catch (error) {
-        alert('❌ No se pudo contactar a soporte. Intente más tarde.');
+        console.error('Error enviando a n8n:', error);
+        alert('❌ Error de conexión: No se pudo contactar a soporte. Verifique su conexión o intente más tarde.');
     } finally {
+        // Restauramos el botón a su estado original
         btn.innerText = originalIcon;
         btn.disabled = false;
+        btn.style.opacity = '1';
     }
 }
