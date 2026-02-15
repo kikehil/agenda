@@ -46,6 +46,9 @@ if (btnLogin) {
         currentUserName = userNameInput.value.trim();
         if (currentUserName) {
             loginModal.classList.add('hidden');
+            const soporteBtn = document.getElementById('soporte-ti');
+            if (soporteBtn) soporteBtn.classList.remove('hidden');
+
             showToast(`Bienvenido(a), ${currentUserName}`);
             if (globalState) updateUI();
         } else {
