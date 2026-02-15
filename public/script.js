@@ -45,6 +45,7 @@ if (btnLogin) {
     btnLogin.onclick = () => {
         currentUserName = userNameInput.value.trim();
         if (currentUserName) {
+            localStorage.setItem('usuarioAgenda', currentUserName); // 👈 NUEVO
             loginModal.classList.add('hidden');
 
             // Mostrar botón de soporte solo después del login
@@ -398,9 +399,9 @@ async function notificarSoporte() {
 
     try {
         // Obtenemos el nombre del usuario de forma segura
-        const nombreUsuario = (typeof currentUserName !== 'undefined' && currentUserName)
-            ? currentUserName
-            : 'Usuario de Agenda (Anon)';
+        const nombreUsuario = localStorage.getItem('usuarioAgenda') ||
+            currentUserName ||
+            'No identificado';
 
         const data = {
             evento: 'Solicitud de Soporte TI',
