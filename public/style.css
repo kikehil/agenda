@@ -323,19 +323,32 @@ body {
     height: 94vh;
     max-width: 1400px;
     border-radius: var(--radius-lg);
-    padding: clamp(1rem, 3vh, 2.5rem);
+    padding: 0;
+    /* Quitamos padding para que el header llegue a los bordes */
     display: flex;
     flex-direction: column;
     overflow: hidden;
     border: 4px solid var(--amarillo-oxxo);
     position: relative;
+    box-shadow: 0 0 100px rgba(0, 0, 0, 0.5);
+}
+
+.modal-header {
+    background: var(--blanco);
+    padding: 20px 30px;
+    border-bottom: 2px solid #eee;
+    z-index: 10;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
 }
 
 .admin-body {
     flex: 1;
     overflow-y: auto;
     overflow-x: hidden;
-    padding-bottom: 2rem;
+    padding: 30px;
+    padding-bottom: 4rem;
 }
 
 .excel-controls {
@@ -494,10 +507,34 @@ body {
     }
 
     .modal-content {
-        padding: 0.8rem;
-        height: 96vh;
-        width: 96vw;
+        height: 98vh;
+        width: 98vw;
         border-radius: 12px;
+    }
+
+    .modal-header {
+        padding: 15px;
+    }
+
+    .modal-header .flex-row {
+        flex-direction: column !important;
+        align-items: center !important;
+        gap: 15px;
+    }
+
+    .playback-controls {
+        width: 100%;
+        justify-content: center;
+        gap: 5px;
+    }
+
+    .playback-controls .btn-control {
+        padding: 10px 8px;
+        font-size: 0.65rem;
+    }
+
+    .admin-body {
+        padding: 15px;
     }
 
     #current-title {

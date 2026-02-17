@@ -78,13 +78,24 @@
     <!-- PANEL DE ADMINISTRACIÓN -->
     <div id="admin-panel" class="modal hidden">
         <div class="modal-content">
-            <div class="flex-row" style="justify-content: space-between; margin-bottom: 30px;">
-                <div>
-                    <h2 style="font-weight: 950; font-size: 2rem; margin-bottom: 5px;">Moderación TOPS</h2>
-                    <span id="connected-count-badge" class="badge"
-                        style="background: #eee; color: #666; font-size: 0.8rem;">Conectados: --</span>
+            <div class="modal-header">
+                <div class="flex-row" style="justify-content: space-between; width: 100%; align-items: flex-start;">
+                    <div>
+                        <h2 style="font-weight: 950; font-size: 1.5rem; margin-bottom: 5px;">Moderación TOPS</h2>
+                        <span id="connected-count-badge" class="badge"
+                            style="background: #eee; color: #666; font-size: 0.75rem;">Conectados: --</span>
+                    </div>
+
+                    <div class="playback-controls" style="margin: 0; padding: 0; border: none;">
+                        <button id="admin-prev" class="btn-control">Anterior</button>
+                        <button id="admin-play" class="btn-control btn-play">Iniciar Tema</button>
+                        <button id="admin-pause" class="btn-control btn-pause">Pausar</button>
+                        <button id="admin-next" class="btn-control">Siguiente</button>
+                        <button id="admin-reset" class="btn-outline" style="margin-left: 10px;">Reiniciar Todo</button>
+                    </div>
+
+                    <button id="btn-close-admin" class="btn-outline">Cerrar</button>
                 </div>
-                <button id="btn-close-admin" class="btn-outline">Cerrar</button>
             </div>
 
             <div class="admin-body">
@@ -99,14 +110,6 @@
                             Agenda</label>
                         <input type="file" id="excel-upload" accept=".xlsx, .xls" style="display: none;">
                     </div>
-                </div>
-
-                <div class="playback-controls">
-                    <button id="admin-prev" class="btn-control">Anterior</button>
-                    <button id="admin-play" class="btn-control btn-play">Iniciar Tema</button>
-                    <button id="admin-pause" class="btn-control btn-pause">Pausar</button>
-                    <button id="admin-next" class="btn-control">Siguiente</button>
-                    <button id="admin-reset" class="btn-outline" style="margin-left: 20px;">Reiniciar Todo</button>
                 </div>
 
                 <h3 style="margin: 30px 0 15px; font-weight: 900;">Edición Rápida</h3>
