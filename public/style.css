@@ -7,6 +7,7 @@
     --sombra-premium: 0 15px 35px rgba(0, 0, 0, 0.15);
     --radius-lg: 24px;
     --radius-md: 12px;
+    --naranja-oxxo: #FF8000;
 }
 
 * {
@@ -172,15 +173,19 @@ body {
 }
 
 .timer-display {
-    font-size: clamp(6rem, 25vw, 30vh);
+    font-size: clamp(4rem, 20vw, 25vh);
     font-weight: 950;
     line-height: 0.9;
     font-variant-numeric: tabular-nums;
     margin: 1vh 0;
 }
 
+.timer-display.timer-long {
+    font-size: clamp(3rem, 15vw, 20vh);
+}
+
 #current-title {
-    font-size: clamp(1.2rem, 5vw, 3.5rem);
+    font-size: clamp(1rem, 4.5vw, 3rem);
     font-weight: 900;
     text-transform: uppercase;
     color: var(--rojo-oxxo);
@@ -214,12 +219,12 @@ body {
 }
 
 #next-topic-name {
-    font-size: clamp(1rem, 2.5vw, 2.2rem);
+    font-size: clamp(0.9rem, 2vw, 1.8rem);
     font-weight: 900;
 }
 
 #next-speaker-name {
-    font-size: clamp(0.8rem, 1.1vw, 1.3rem);
+    font-size: clamp(0.75rem, 1vw, 1.1rem);
     font-weight: 700;
     color: var(--rojo-oxxo);
 }
@@ -247,12 +252,12 @@ body {
 }
 
 .waiting-logo {
-    width: clamp(180px, 25vw, 350px);
-    margin-bottom: 3vh;
+    width: clamp(140px, 20vw, 280px);
+    margin-bottom: 2vh;
 }
 
 .waiting-welcome {
-    font-size: clamp(1.8rem, 7vw, 4.5rem);
+    font-size: clamp(1.5rem, 6vw, 3.5rem);
     font-weight: 950;
     line-height: 1.1;
     margin-bottom: 1vh;
@@ -267,14 +272,14 @@ body {
 .waiting-countdown {
     background: var(--rojo-oxxo);
     color: var(--blanco);
-    padding: 3vh 6vw;
+    padding: 2vh 5vw;
     border-radius: var(--radius-lg);
-    border: 8px solid var(--amarillo-oxxo);
-    box-shadow: 0 15px 50px rgba(230, 28, 36, 0.4);
+    border: 6px solid var(--amarillo-oxxo);
+    box-shadow: 0 10px 40px rgba(230, 28, 36, 0.3);
 }
 
 .countdown-timer {
-    font-size: clamp(2.5rem, 9vw, 6.5rem);
+    font-size: clamp(2rem, 8vw, 5rem);
     font-weight: 900;
 }
 
@@ -430,6 +435,16 @@ body {
     font-size: 0.8rem;
 }
 
+.tops-table tr.row-active td {
+    background-color: var(--amarillo-oxxo);
+}
+
+.tops-table tr.row-active input,
+.tops-table tr.row-active select {
+    background-color: rgba(255, 255, 255, 0.5);
+    font-weight: 700;
+}
+
 /* Login Modal Responsive */
 .modal-mini {
     background: var(--blanco);
@@ -446,45 +461,66 @@ body {
     .excel-controls {
         flex-direction: column;
         text-align: center;
+        padding: 1rem;
     }
 
     .excel-controls .flex-row {
         flex-direction: column;
         width: 100%;
+        gap: 10px;
     }
 
     .excel-controls .flex-row button,
     .excel-controls .flex-row label {
         width: 100%;
+        margin: 0 !important;
+    }
+
+    .playback-controls {
+        gap: 5px;
     }
 
     .playback-controls .btn-control {
-        flex: 1;
-        padding: 12px 10px;
-        font-size: 0.7rem;
+        flex: 1 1 45%;
+        padding: 10px 5px;
+        font-size: 0.65rem;
     }
 
     .modal-content {
-        padding: 1rem;
-        height: 98vh;
-        width: 98vw;
+        padding: 0.8rem;
+        height: 96vh;
+        width: 96vw;
         border-radius: 12px;
     }
 
     #current-title {
-        font-size: 1.5rem;
+        font-size: 1.2rem;
     }
 
     .timer-display {
-        font-size: 5rem;
+        font-size: 4rem;
     }
 
     .sidebar {
-        width: 50px;
+        width: 45px;
     }
 
     .main-display {
-        margin-left: 50px;
+        margin-left: 45px;
+        padding: 1vh;
+    }
+
+    .waiting-content {
+        width: 95%;
+    }
+
+    .waiting-countdown {
+        padding: 2vh 4vw;
+        border-width: 4px;
+    }
+
+    .modal-mini {
+        padding: 1.5rem;
     }
 }
 
@@ -541,6 +577,10 @@ body {
 
 .hidden {
     display: none !important;
+}
+
+.timer-warning {
+    color: var(--naranja-oxxo);
 }
 
 .timer-urgent {

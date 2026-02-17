@@ -10,7 +10,7 @@ let state: any = {
     agenda: [
         { id: '1', plannedStart: '08:00', plannedEnd: '08:10', durationString: '00:10', topic: 'Bienvenida', speaker: 'Coordinador', type: 'talk' },
         { id: '2', plannedStart: '08:10', plannedEnd: '08:40', durationString: '00:30', topic: 'Sesión Técnica', speaker: 'Ing. Perez', type: 'talk' },
-        { id: '3', plannedStart: '08:40', plannedEnd: '08:50', durationString: '00:10', topic: 'Receso', speaker: 'Todos', type: 'break' }
+        { id: '3', plannedStart: '08:40', plannedEnd: '08:50', durationString: '00:10', topic: 'Break', speaker: 'Todos', type: 'break' }
     ],
     currentTopicIndex: 0,
     startTime: null,
@@ -23,8 +23,17 @@ let state: any = {
 // --- HELPERS ---
 const durationToSeconds = (durationStr: string): number => {
     if (!durationStr) return 0;
-    const [hrs, mins] = durationStr.split(':').map(Number);
-    return (hrs * 3600) + (mins * 60);
+    const s = String(durationStr).trim();
+    if (s.includes(':')) {
+        const parts = s.split(':').map(Number);
+        if (parts.length >= 2) {
+            const hrs = isNaN(parts[0]) ? 0 : parts[0];
+            const mins = isNaN(parts[1]) ? 0 : parts[1];
+            return (hrs * 3600) + (mins * 60);
+        }
+    }
+    const n = parseInt(s);
+    return isNaN(n) ? 0 : n * 60; // Assume minutes if only a number
 };
 
 const calculateRemaining = () => {
@@ -62,8 +71,12 @@ app.ready((err) => {
     if (err) throw err;
 
     const io = app.io;
+    let connectedClients = 0;
 
     io.on('connection', (socket: Socket) => {
+        connectedClients++;
+        io.emit('connection-count', connectedClients);
+
         let isAdmin = false;
 
         // Sync inicial
@@ -77,6 +90,7 @@ app.ready((err) => {
                 isAdmin = true;
                 socket.emit('admin-auth-success');
                 socket.emit('sync', { ...state, remainingSeconds: calculateRemaining() });
+                socket.emit('connection-count', connectedClients);
             } else {
                 socket.emit('admin-auth-fail', 'Contraseña incorrecta');
             }
@@ -135,6 +149,11 @@ app.ready((err) => {
                     break;
             }
             io.emit('sync', { ...state, remainingSeconds: calculateRemaining() });
+        });
+
+        socket.on('disconnect', () => {
+            connectedClients = Math.max(0, connectedClients - 1);
+            io.emit('connection-count', connectedClients);
         });
     });
 

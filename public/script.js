@@ -101,12 +101,34 @@ socket.on('timer-tick', (data) => {
         updateUI();
         renderNextTopic();
         updateSidebarActive();
+        renderEditor();
     }
 
-    if (data.remainingSeconds === 10 && !data.isPaused) {
-        const audio = document.getElementById('sound-finish');
-        if (audio) audio.play().catch(() => { });
+    if (data.remainingSeconds <= 0 && !data.isPaused) {
+        // Podríamos disparar algo al llegar a cero
     }
+
+    if (!data.isPaused) {
+        const current = globalState.agenda[globalState.currentTopicIndex];
+        if (current) {
+            const totalMins = getMinutesFromDuration(current.durationString);
+            // Alerta sonora a los 10 minutos (si el tema dura más de 10)
+            if (data.remainingSeconds === 600 && totalMins > 10) {
+                const audio = document.getElementById('sound-finish');
+                if (audio) audio.play().catch(() => { });
+            }
+        }
+        // Alerta sonora final (10 segundos)
+        if (data.remainingSeconds === 10) {
+            const audio = document.getElementById('sound-finish');
+            if (audio) audio.play().catch(() => { });
+        }
+    }
+});
+
+socket.on('connection-count', (count) => {
+    const badge = document.getElementById('connected-count-badge');
+    if (badge) badge.textContent = `Conectados: ${count}`;
 });
 
 // --- UI UPDATES ---
@@ -129,7 +151,7 @@ function updateUI() {
     if (current.type === 'break' || current.type === 'meal') {
         body.classList.add('modo-break');
         if (breakAlert) breakAlert.classList.remove('hidden');
-        labelModo.textContent = "MODO RECESO";
+        labelModo.textContent = "MODO BREAK";
     } else if (currentUserName.toLowerCase() === (current.speaker || '').toLowerCase()) {
         body.classList.add('modo-orador');
         if (speakerAlert) speakerAlert.classList.remove('hidden');
@@ -145,7 +167,7 @@ function renderNextTopic() {
     if (next) {
         nextTopicArea.classList.remove('hidden');
         nextTopicName.textContent = next.topic;
-        nextSpeakerName.textContent = next.type === 'break' ? 'EN RECESO' : `Presenta: ${next.speaker}`;
+        nextSpeakerName.textContent = next.type === 'break' ? 'EN BREAK' : `Presenta: ${next.speaker}`;
     } else {
         nextTopicArea.classList.add('hidden');
     }
@@ -183,11 +205,41 @@ btnToggleSidebar.onclick = () => {
 };
 
 function updateTimer(seconds) {
-    const min = Math.floor(seconds / 60);
+    const hrs = Math.floor(seconds / 3600);
+    const min = Math.floor((seconds % 3600) / 60);
     const sec = seconds % 60;
-    timerDisplay.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
-    if (seconds <= 30) timerDisplay.classList.add('timer-urgent');
-    else timerDisplay.classList.remove('timer-urgent');
+
+    if (hrs > 0) {
+        timerDisplay.textContent = `${hrs.toString().padStart(2, '0')}:${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        timerDisplay.classList.add('timer-long');
+    } else {
+        timerDisplay.textContent = `${min.toString().padStart(2, '0')}:${sec.toString().padStart(2, '0')}`;
+        timerDisplay.classList.remove('timer-long');
+    }
+
+    // Resetear clases de colores
+    timerDisplay.classList.remove('timer-warning', 'timer-urgent');
+
+    if (!globalState) return;
+    const current = globalState.agenda[globalState.currentTopicIndex];
+
+    if (current) {
+        const totalMins = getMinutesFromDuration(current.durationString);
+
+        if (totalMins > 10) {
+            // Regla para temas largos (>10 min)
+            if (seconds <= 300) { // 5 minutos: Rojo Parpadeante
+                timerDisplay.classList.add('timer-urgent');
+            } else if (seconds <= 600) { // 10 minutos: Naranja
+                timerDisplay.classList.add('timer-warning');
+            }
+        } else {
+            // Regla para temas cortos (<=10 min)
+            if (seconds <= 30) { // 30 segundos
+                timerDisplay.classList.add('timer-urgent');
+            }
+        }
+    }
 }
 
 function checkWaitingScreen() {
@@ -251,17 +303,19 @@ socket.on('admin-auth-fail', (msg) => {
 function renderEditor() {
     agendaRows.innerHTML = '';
     localAgenda.forEach((item, index) => {
+        const isActive = (globalState && index === globalState.currentTopicIndex);
         const tr = document.createElement('tr');
+        if (isActive) tr.className = 'row-active';
         tr.innerHTML = `
             <td><input type="time" value="${item.plannedStart}" onchange="updateLocal(${index}, 'plannedStart', this.value)"></td>
             <td><input type="time" value="${item.plannedEnd}" readonly style="background: #f8f9fa; opacity: 0.7;"></td>
-            <td><input type="time" value="${item.durationString}" onchange="updateLocal(${index}, 'durationString', this.value)"></td>
+            <td><input type="text" value="${item.durationString}" onchange="updateLocal(${index}, 'durationString', this.value)" style="width: 70px; text-align: center;"></td>
             <td><input type="text" value="${item.topic}" placeholder="Tema..." onchange="updateLocal(${index}, 'topic', this.value)"></td>
             <td><input type="text" value="${item.speaker}" placeholder="Responsable..." onchange="updateLocal(${index}, 'speaker', this.value)"></td>
             <td>
                 <select onchange="updateLocal(${index}, 'type', this.value)">
                     <option value="talk" ${item.type === 'talk' ? 'selected' : ''}>Charla</option>
-                    <option value="break" ${item.type === 'break' ? 'selected' : ''}>Receso</option>
+                    <option value="break" ${item.type === 'break' ? 'selected' : ''}>Break</option>
                     <option value="meal" ${item.type === 'meal' ? 'selected' : ''}>Comida</option>
                 </select>
             </td>
@@ -273,15 +327,18 @@ function renderEditor() {
 
 function updateLocal(index, field, value) {
     if (!localAgenda[index]) return;
+
+    if (field === 'plannedStart') value = normalizeTime(value);
+    if (field === 'durationString') value = ensureHHMM(value);
+
     localAgenda[index][field] = value;
-    if (field === 'plannedStart' || field === 'durationString') {
-        const start = localAgenda[index].plannedStart;
-        const dur = localAgenda[index].durationString;
-        if (start && dur) {
-            localAgenda[index].plannedEnd = addMinutes(start, getMinutesFromDuration(dur));
-            renderEditor();
-        }
-    }
+
+    // Recalcular fin
+    const start = localAgenda[index].plannedStart;
+    const durMins = getMinutesFromDuration(localAgenda[index].durationString);
+    localAgenda[index].plannedEnd = addMinutes(start, durMins);
+
+    renderEditor();
 }
 
 function removeLocal(index) {
@@ -335,19 +392,23 @@ if (excelUploadInput) {
             const data = new Uint8Array(event.target.result);
             const workbook = XLSX.read(data, { type: 'array' });
             const sheet = workbook.Sheets[workbook.SheetNames[0]];
-            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1 });
+            const rows = XLSX.utils.sheet_to_json(sheet, { header: 1, raw: false });
             const newAgenda = [];
             for (let i = 1; i < rows.length; i++) {
                 const r = rows[i];
-                if (!r[0] || !r[2]) continue;
-                const start = String(r[0]);
-                const dur = String(r[1] || "00:10");
+                if (!r[0] && !r[2]) continue;
+
+                const start = normalizeTime(r[0]);
+                const durVal = r[1] || "00:10";
+                const mins = getMinutesFromDuration(durVal);
+                const durationString = ensureHHMM(mins);
+
                 newAgenda.push({
                     id: Date.now().toString() + i,
                     plannedStart: start,
-                    durationString: dur,
-                    plannedEnd: addMinutes(start, getMinutesFromDuration(dur)),
-                    topic: r[2],
+                    durationString: durationString,
+                    plannedEnd: addMinutes(start, mins),
+                    topic: r[2] || "Sin título",
                     speaker: r[3] || "",
                     type: r[4] || "talk"
                 });
@@ -371,16 +432,80 @@ document.getElementById('admin-prev').onclick = () => socket.emit('admin-action'
 document.getElementById('admin-reset').onclick = () => { socket.emit('admin-action', 'reset'); showToast("Reinicio completo"); };
 
 // Helpers
+function ensureHHMM(val) {
+    if (val === undefined || val === null || val === '') return "00:10";
+    if (typeof val === 'number') {
+        const h = Math.floor(val / 60);
+        const m = val % 60;
+        return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+    }
+    let s = String(val).trim();
+    if (s.includes(':')) {
+        const parts = s.split(':');
+        const h = parts[0].padStart(2, '0');
+        const m = (parts[1] || '00').padStart(2, '0');
+        return `${h.slice(-2)}:${m.slice(-2)}`;
+    }
+    const n = parseInt(s);
+    if (!isNaN(n)) {
+        // Si el número es grande (ej. 30), asumimos minutos. 
+        // Si es pequeño (ej. 1), podría ser hora o minutos, pero aquí lo tratamos como minutos.
+        return ensureHHMM(n);
+    }
+    return "00:10";
+}
+
+function normalizeTime(timeStr) {
+    if (!timeStr) return "08:00";
+    let s = String(timeStr).trim().toUpperCase();
+
+    // Caso especial: Excel serial (0.333...) -> No lo manejamos aquí si usamos raw:false
+    if (!s.includes(':') && !isNaN(parseFloat(s))) {
+        const n = parseFloat(s);
+        if (n > 0 && n < 1) { // Es un serial de Excel
+            const totalMins = Math.round(n * 1440);
+            return ensureHHMM(totalMins);
+        }
+    }
+
+    const isPM = s.includes('PM');
+    const isAM = s.includes('AM');
+    let clean = s.replace(/[AP]M/, '').trim();
+
+    if (!clean.includes(':')) {
+        const h = parseInt(clean);
+        return isNaN(h) ? "08:00" : `${h.toString().padStart(2, '0')}:00`;
+    }
+
+    let [h, m] = clean.split(':').map(Number);
+    if (isNaN(h)) h = 8;
+    if (isNaN(m)) m = 0;
+
+    if (isPM && h < 12) h += 12;
+    if (isAM && h === 12) h = 0;
+
+    return `${h.toString().padStart(2, '0')}:${m.toString().padStart(2, '0')}`;
+}
+
 function addMinutes(time, mins) {
-    if (!time.includes(':')) return "08:00";
-    const [h, m] = time.split(':').map(Number);
-    const d = new Date(); d.setHours(h, m + mins, 0);
+    const normStart = normalizeTime(time);
+    const [h, m] = normStart.split(':').map(Number);
+    const d = new Date();
+    d.setHours(h, m + mins, 0, 0);
     return d.toTimeString().slice(0, 5);
 }
+
 function getMinutesFromDuration(dur) {
-    if (!dur.includes(':')) return 10;
-    const [h, m] = dur.split(':').map(Number);
-    return (h * 60) + m;
+    if (dur === undefined || dur === null || dur === '') return 10;
+    if (typeof dur === 'number') return Math.floor(dur);
+
+    let s = String(dur).trim();
+    if (s.includes(':')) {
+        const [h, m] = s.split(':').map(Number);
+        return (isNaN(h) ? 0 : h * 60) + (isNaN(m) ? 0 : m);
+    }
+    const n = parseInt(s);
+    return isNaN(n) ? 10 : n;
 }
 
 // SOPORTE TI
@@ -413,14 +538,15 @@ async function notificarSoporte() {
 
         // Usamos mode: 'no-cors' para evitar errores estúpidos del navegador
         // n8n recibirá el mensaje, aunque el navegador diga que "falló" porque no puede leer la respuesta.
+
         await fetch(WEBHOOK_URL, {
             method: 'POST',
-            mode: 'no-cors',
             headers: {
-                'Content-Type': 'text/plain'
+                'Content-Type': 'application/json'
             },
             body: JSON.stringify(data)
         });
+
 
         // Como usamos no-cors, el navegador no nos deja leer la respuesta (siempre es "falla" técnica)
         // Pero como ya confirmaste que el mensaje LLEGA a WhatsApp, simplemente damos por hecho que funcionó.
