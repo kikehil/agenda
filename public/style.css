@@ -161,7 +161,7 @@ body {
 }
 
 .main-logo-display {
-    width: clamp(120px, 15vw, 220px);
+    width: clamp(240px, 30vw, 440px);
     margin-bottom: 2vh;
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
 }
