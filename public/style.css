@@ -161,8 +161,9 @@ body {
 }
 
 .main-logo-display {
-    width: clamp(240px, 30vw, 440px);
-    margin-bottom: 2vh;
+    width: clamp(200px, 25vw, 380px);
+    /* Ligeramente más pequeño que el 'doble' para balancear */
+    margin-bottom: 0.5vh;
     filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
 }
 
@@ -181,9 +182,9 @@ body {
 .timer-display {
     font-size: clamp(4rem, 20vw, 25vh);
     font-weight: 950;
-    line-height: 0.9;
+    line-height: 0.8;
     font-variant-numeric: tabular-nums;
-    margin: 1vh 0;
+    margin: 0;
 }
 
 .timer-display.timer-long {
@@ -195,7 +196,7 @@ body {
     font-weight: 900;
     text-transform: uppercase;
     color: var(--rojo-oxxo);
-    margin-bottom: 0.5vh;
+    margin-bottom: 0px;
 }
 
 #current-speaker {
