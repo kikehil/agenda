@@ -160,6 +160,12 @@ body {
     height: clamp(25px, 3.5vh, 40px);
 }
 
+.main-logo-display {
+    width: clamp(120px, 15vw, 220px);
+    margin-bottom: 2vh;
+    filter: drop-shadow(0 5px 15px rgba(0, 0, 0, 0.1));
+}
+
 /* --- MAIN DISPLAY --- */
 .main-display {
     flex: 1;
