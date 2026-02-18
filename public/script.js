@@ -112,16 +112,20 @@ socket.on('timer-tick', (data) => {
         const current = globalState.agenda[globalState.currentTopicIndex];
         if (current) {
             const totalMins = getMinutesFromDuration(current.durationString);
-            // Alerta sonora a los 10 minutos (si el tema dura más de 10)
-            if (data.remainingSeconds === 600 && totalMins > 10) {
+            const alertSecs = (current.alertMinutes || 0) * 60;
+
+            // Alerta personalizada por el moderador
+            if (alertSecs > 0 && data.remainingSeconds === alertSecs) {
+                const audio = document.getElementById('sound-finish');
+                if (audio) audio.play().catch(() => { });
+                showToast(`Alerta: Faltan ${current.alertMinutes} minutos`);
+            }
+
+            // Alerta sonora final (10 segundos) - Backup de seguridad
+            if (data.remainingSeconds === 10) {
                 const audio = document.getElementById('sound-finish');
                 if (audio) audio.play().catch(() => { });
             }
-        }
-        // Alerta sonora final (10 segundos)
-        if (data.remainingSeconds === 10) {
-            const audio = document.getElementById('sound-finish');
-            if (audio) audio.play().catch(() => { });
         }
     }
 });
@@ -319,6 +323,7 @@ function renderEditor() {
                     <option value="meal" ${item.type === 'meal' ? 'selected' : ''}>Comida</option>
                 </select>
             </td>
+            <td><input type="number" value="${item.alertMinutes || 0}" min="0" style="width: 50px; text-align: center;" onchange="updateLocal(${index}, 'alertMinutes', this.value)"></td>
             <td><button onclick="removeLocal(${index})" style="background: none; border: none; cursor: pointer; font-size: 1.2rem; filter: grayscale(1);">🗑️</button></td>
         `;
         agendaRows.appendChild(tr);
@@ -330,6 +335,7 @@ function updateLocal(index, field, value) {
 
     if (field === 'plannedStart') value = normalizeTime(value);
     if (field === 'durationString') value = ensureHHMM(value);
+    if (field === 'alertMinutes') value = parseInt(value) || 0;
 
     localAgenda[index][field] = value;
 
@@ -356,7 +362,8 @@ btnAddRow.onclick = () => {
         durationString: '00:10',
         topic: '',
         speaker: '',
-        type: 'talk'
+        type: 'talk',
+        alertMinutes: 1
     });
     renderEditor();
 };
@@ -371,9 +378,9 @@ btnSaveAgenda.onclick = () => {
 if (btnDownloadTemplate) {
     btnDownloadTemplate.onclick = () => {
         const data = [
-            ["INICIO", "DURACION (HH:MM)", "TEMA", "PRESENTA", "TIPO (talk/break/meal)"],
-            ["08:00", "00:10", "Bienvenida", "Coordinador", "talk"],
-            ["08:10", "00:30", "Sesión Técnica", "Ingeniería", "talk"]
+            ["INICIO", "DURACION (HH:MM)", "TEMA", "PRESENTA", "TIPO (talk/break/meal)", "ALERTA (MIN)"],
+            ["08:00", "00:10", "Bienvenida", "Coordinador", "talk", "1"],
+            ["08:10", "00:30", "Sesión Técnica", "Ingeniería", "talk", "5"]
         ];
         const ws = XLSX.utils.aoa_to_sheet(data);
         const wb = XLSX.utils.book_new();
@@ -410,7 +417,8 @@ if (excelUploadInput) {
                     plannedEnd: addMinutes(start, mins),
                     topic: r[2] || "Sin título",
                     speaker: r[3] || "",
-                    type: r[4] || "talk"
+                    type: r[4] || "talk",
+                    alertMinutes: parseInt(r[5]) || 0
                 });
             }
             if (newAgenda.length > 0) {

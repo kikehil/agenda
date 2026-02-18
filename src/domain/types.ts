@@ -15,6 +15,7 @@ export interface AgendaItem {
     topic: string;
     speaker: string;
     type: 'talk' | 'break' | 'meal';
+    alertMinutes?: number; // Minutos antes de terminar para sonar la alarma
 }
 
 export interface SessionState {

@@ -8,9 +8,9 @@ import { AgendaItem } from './domain/types';
 // --- STATE MANAGEMENT ---
 let state: any = {
     agenda: [
-        { id: '1', plannedStart: '08:00', plannedEnd: '08:10', durationString: '00:10', topic: 'Bienvenida', speaker: 'Coordinador', type: 'talk' },
-        { id: '2', plannedStart: '08:10', plannedEnd: '08:40', durationString: '00:30', topic: 'Sesión Técnica', speaker: 'Ing. Perez', type: 'talk' },
-        { id: '3', plannedStart: '08:40', plannedEnd: '08:50', durationString: '00:10', topic: 'Break', speaker: 'Todos', type: 'break' }
+        { id: '1', plannedStart: '08:00', plannedEnd: '08:10', durationString: '00:10', topic: 'Bienvenida', speaker: 'Coordinador', type: 'talk', alertMinutes: 1 },
+        { id: '2', plannedStart: '08:10', plannedEnd: '08:40', durationString: '00:30', topic: 'Sesión Técnica', speaker: 'Ing. Perez', type: 'talk', alertMinutes: 5 },
+        { id: '3', plannedStart: '08:40', plannedEnd: '08:50', durationString: '00:10', topic: 'Break', speaker: 'Todos', type: 'break', alertMinutes: 1 }
     ],
     currentTopicIndex: 0,
     startTime: null,
